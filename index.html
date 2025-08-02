@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恐竜アクションゲーム</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>恐竜アクションゲーム</h1>
+            <div class="game-info">
+                <div class="score">スコア: <span id="score">0</span></div>
+                <div class="lives">ライフ: <span id="lives">3</span></div>
+                <div class="time">残り時間: <span id="timer">180</span>秒</div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+            
+            <div class="game-overlay" id="gameOverlay">
+                <div class="start-screen" id="startScreen">
+                    <h2>恐竜アクションゲーム</h2>
+                    <p>スペースキー: ジャンプ</p>
+                    <p>右矢印キー: ダッシュ</p>
+                    <p>下矢印キー: しゃがみ</p>
+                    <p>X/Z/C/Ctrl: ビーム攻撃</p>
+                    <button id="startButton">ゲーム開始</button>
+                </div>
+                
+                <div class="game-over-screen" id="gameOverScreen" style="display: none;">
+                    <h2>ゲームオーバー</h2>
+                    <p>スコア: <span id="finalScore">0</span></p>
+                    <p>ハイスコア: <span id="highScore">0</span></p>
+                    <button id="restartButton">リトライ</button>
+                </div>
+                
+                <div class="game-clear-screen" id="gameClearScreen" style="display: none;">
+                    <h2>ゲームクリア！</h2>
+                    <p>スコア: <span id="clearScore">0</span></p>
+                    <p>ハイスコア: <span id="clearHighScore">0</span></p>
+                    <button id="playAgainButton">もう一度</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-hint">
+            <p>🎮 操作: スペース(ジャンプ) / →(ダッシュ) / ↓(しゃがみ) / X,Z,C,Ctrl(ビーム)</p>
+        </div>
+    </div>
+    
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
