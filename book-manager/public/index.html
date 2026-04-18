@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Manager</title>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: 1.5rem; }
+    form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; margin-bottom: 1.5rem; }
+    form label { font-size: 0.85rem; color: #555; }
+    form input, form select, form textarea { width: 100%; padding: 0.4rem; box-sizing: border-box; }
+    form textarea { resize: vertical; height: 4rem; }
+    .full-width { grid-column: 1 / -1; }
+    button[type="submit"] { padding: 0.5rem 1.5rem; }
+    #msg { margin-bottom: 1rem; color: green; min-height: 1.2rem; }
+    #msg.error { color: red; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+    th { background: #f5f5f5; }
+    .rating { color: #f0a500; letter-spacing: -1px; }
+    .delete-btn { cursor: pointer; color: red; background: none; border: none; font-size: 1rem; }
+    .delete-btn:hover { opacity: 0.7; }
+    .memo-cell { max-width: 200px; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <h1>読んだ本の管理</h1>
+
+  <form id="add-form">
+    <div>
+      <label>タイトル *</label>
+      <input type="text" name="title" required>
+    </div>
+    <div>
+      <label>著者 *</label>
+      <input type="text" name="author" required>
+    </div>
+    <div>
+      <label>ジャンル</label>
+      <input type="text" name="genre" placeholder="SF, ミステリ, など">
+    </div>
+    <div>
+      <label>評価</label>
+      <select name="rating">
+        <option value="5">★★★★★ (5)</option>
+        <option value="4">★★★★☆ (4)</option>
+        <option value="3" selected>★★★☆☆ (3)</option>
+        <option value="2">★★☆☆☆ (2)</option>
+        <option value="1">★☆☆☆☆ (1)</option>
+      </select>
+    </div>
+    <div>
+      <label>読了日</label>
+      <input type="date" name="read_date">
+    </div>
+    <div class="full-width">
+      <label>メモ</label>
+      <textarea name="memo" placeholder="感想など"></textarea>
+    </div>
+    <div class="full-width">
+      <button type="submit">追加</button>
+    </div>
+  </form>
+
+  <div id="msg"></div>
+
+  <table id="book-table">
+    <thead>
+      <tr>
+        <th>タイトル</th><th>著者</th><th>ジャンル</th><th>評価</th><th>読了日</th><th>メモ</th><th></th>
+      </tr>
+    </thead>
+    <tbody id="book-tbody"></tbody>
+  </table>
+
+  <script>
+    const msg = document.getElementById('msg');
+    const tbody = document.getElementById('book-tbody');
+
+    function stars(n) {
+      return '★'.repeat(n) + '☆'.repeat(5 - n);
+    }
+
+    function showMsg(text, isError = false) {
+      msg.textContent = text;
+      msg.className = isError ? 'error' : '';
+      setTimeout(() => { msg.textContent = ''; msg.className = ''; }, 3000);
+    }
+
+    async function loadBooks() {
+      const res = await fetch('/api/books');
+      const books = await res.json();
+      tbody.innerHTML = '';
+      if (books.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa">まだ登録がありません</td></tr>';
+        return;
+      }
+      books.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${esc(b.title)}</td>
+          <td>${esc(b.author)}</td>
+          <td>${esc(b.genre)}</td>
+          <td class="rating">${stars(Number(b.rating))}</td>
+          <td>${esc(b.read_date)}</td>
+          <td class="memo-cell">${esc(b.memo)}</td>
+          <td><button class="delete-btn" data-id="${esc(b.id)}">✕</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function esc(s) {
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    tbody.addEventListener('click', async e => {
+      if (!e.target.classList.contains('delete-btn')) return;
+      const id = e.target.dataset.id;
+      if (!confirm('削除しますか？')) return;
+      const res = await fetch(`/api/books/${id}`, { method: 'DELETE' });
+      if (res.ok) { showMsg('削除しました'); loadBooks(); }
+      else { showMsg('削除に失敗しました', true); }
+    });
+
+    document.getElementById('add-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const body = Object.fromEntries(fd.entries());
+      const res = await fetch('/api/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        showMsg('追加しました！');
+        e.target.reset();
+        e.target.rating.value = '3';
+        loadBooks();
+      } else {
+        const err = await res.json();
+        showMsg(err.error ?? '追加に失敗しました', true);
+      }
+    });
+
+    loadBooks();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "book-manager",
+  "version": "1.0.0",
+  "description": "読んだ本の管理Webアプリ",
+  "scripts": {
+    "start": "python3 server.py"
+  }
+}
