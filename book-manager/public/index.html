@@ -1,150 +1,394 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book Manager</title>
+  <title>読んだ本の管理 · Yomikiri</title>
   <style>
-    body { font-family: sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-    h1 { margin-bottom: 1.5rem; }
-    form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; margin-bottom: 1.5rem; }
-    form label { font-size: 0.85rem; color: #555; }
-    form input, form select, form textarea { width: 100%; padding: 0.4rem; box-sizing: border-box; }
-    form textarea { resize: vertical; height: 4rem; }
-    .full-width { grid-column: 1 / -1; }
-    button[type="submit"] { padding: 0.5rem 1.5rem; }
-    #msg { margin-bottom: 1rem; color: green; min-height: 1.2rem; }
-    #msg.error { color: red; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { border: 1px solid #ddd; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
-    th { background: #f5f5f5; }
-    .rating { color: #f0a500; letter-spacing: -1px; }
-    .delete-btn { cursor: pointer; color: red; background: none; border: none; font-size: 1rem; }
-    .delete-btn:hover { opacity: 0.7; }
-    .memo-cell { max-width: 200px; word-break: break-word; }
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --paper-0:   #FDFBF7; --paper-50:  #F7F3EC; --paper-100: #EFE8DB;
+  --paper-200: #E2D8C4; --paper-300: #C9BCA1;
+  --ink-900: #1C1A16; --ink-800: #2E2A22; --ink-700: #4A443A;
+  --ink-500: #7A7163; --ink-300: #B6AC9B; --ink-100: #E8E1D2;
+  --gold-50:  #FBF3DC; --gold-100: #F6E4AE; --gold-300: #EFCA63;
+  --gold-500: #D99C1A; --gold-600: #B67D0C; --gold-700: #8E5F07;
+  --indigo-50: #EEEEF5; --indigo-300: #7B7CAB; --indigo-500: #363770; --indigo-700: #1F2050;
+  --success-50: #E8F2E5; --success-500: #3E7A2E; --success-700: #2A5620;
+  --danger-50:  #F7E6E3; --danger-500:  #B53A28; --danger-700:  #7F2618;
+  --info-50: #E5EEF5; --info-500: #2E6B9E;
+  --warn-50: #FAECD2; --warn-500: #B67D0C;
+  --bg: var(--paper-0); --bg-raised: #FFFFFF; --bg-sunken: var(--paper-50); --bg-hover: var(--paper-50);
+  --fg: var(--ink-900); --fg-muted: var(--ink-700); --fg-subtle: var(--ink-500);
+  --fg-disabled: var(--ink-300); --fg-on-gold: #1C1A16;
+  --border: var(--paper-200); --border-strong: var(--paper-300); --border-focus: var(--gold-500);
+  --rating: #E0A517;
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px;
+  --s-8:32px; --s-10:40px; --s-12:48px; --s-16:64px;
+  --radius-xs:2px; --radius-sm:4px; --radius-md:6px; --radius-lg:10px; --radius-pill:999px;
+  --shadow-1: 0 1px 2px rgba(44,36,22,0.06);
+  --shadow-2: 0 2px 6px rgba(44,36,22,0.08), 0 1px 2px rgba(44,36,22,0.05);
+  --shadow-3: 0 8px 24px rgba(44,36,22,0.10), 0 2px 6px rgba(44,36,22,0.06);
+  --shadow-focus: 0 0 0 3px rgba(217,156,26,0.30);
+  --ease-standard: cubic-bezier(0.2,0.0,0.0,1.0);
+  --ease-emphasis:  cubic-bezier(0.2,0.8,0.2,1.0);
+  --dur-fast:120ms; --dur-base:180ms; --dur-slow:280ms;
+  --font-sans:  "Noto Sans JP",-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  --font-serif: "Noto Serif JP","Hiragino Mincho ProN","Yu Mincho","Georgia",serif;
+  --font-mono:  "JetBrains Mono","SFMono-Regular",Menlo,Consolas,monospace;
+  --fs-xs:12px; --fs-sm:14px; --fs-base:16px; --fs-md:18px; --fs-lg:22px;
+  --fs-xl:28px; --fs-2xl:36px;
+  --lh-tight:1.15; --lh-snug:1.30; --lh-base:1.55; --lh-loose:1.75;
+  --tracking-tight:-0.01em; --tracking-normal:0; --tracking-wide:0.04em;
+  --t-body:    400 var(--fs-base)/var(--lh-base) var(--font-sans);
+  --t-body-sm: 400 var(--fs-sm)/var(--lh-base)   var(--font-sans);
+  --t-label:   500 var(--fs-xs)/var(--lh-snug)   var(--font-sans);
+  --t-button:  500 var(--fs-sm)/1                var(--font-sans);
+  --t-mono:    400 var(--fs-sm)/var(--lh-base)   var(--font-mono);
+}
+html { color-scheme: light; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--t-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
   </style>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 </head>
 <body>
-  <h1>読んだ本の管理</h1>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
 
-  <form id="add-form">
-    <div>
-      <label>タイトル *</label>
-      <input type="text" name="title" required>
+/* ===== Button ===== */
+function Button({ variant = 'primary', children, disabled, type = 'button', onClick }) {
+  const base = {
+    font: 'var(--t-button)', padding: '10px 18px', borderRadius: 'var(--radius-md)',
+    border: '1px solid transparent', cursor: disabled ? 'not-allowed' : 'pointer',
+    transition: 'background var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard)',
+    display: 'inline-flex', alignItems: 'center', gap: 8,
+  };
+  const variants = {
+    primary:   { background: disabled ? 'var(--paper-100)' : 'var(--gold-500)', color: disabled ? 'var(--fg-disabled)' : 'var(--fg-on-gold)', borderColor: disabled ? 'var(--border)' : 'var(--gold-600)', boxShadow: disabled ? 'none' : 'var(--shadow-1)' },
+    secondary: { background: '#fff', color: 'var(--fg)', borderColor: 'var(--border-strong)' },
+    ghost:     { background: 'transparent', color: 'var(--fg-muted)' },
+    danger:    { background: 'transparent', color: 'var(--danger-500)' },
+  };
+  const v = variants[variant];
+  return (
+    <button type={type} disabled={disabled} onClick={onClick}
+      style={{ ...base, ...v }}
+      onMouseEnter={(e) => { if (disabled) return; if (variant==='primary') e.currentTarget.style.background='var(--gold-600)'; else e.currentTarget.style.background='var(--paper-50)'; }}
+      onMouseLeave={(e) => { if (disabled) return; e.currentTarget.style.background=v.background; }}
+    >{children}</button>
+  );
+}
+
+/* ===== Field ===== */
+const inputBase = {
+  width: '100%', font: 'var(--t-body)', padding: '8px 10px',
+  border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
+  background: '#fff', color: 'var(--fg)', boxSizing: 'border-box', outline: 'none',
+  transition: 'border-color var(--dur-fast), box-shadow var(--dur-fast)',
+};
+function Field({ label, required, error, hint, children, fullWidth }) {
+  return (
+    <div style={{ gridColumn: fullWidth ? '1 / -1' : 'auto' }}>
+      <label style={{ display:'block', font:'var(--t-label)', color:'var(--fg-muted)', letterSpacing:'0.04em', textTransform:'uppercase', marginBottom:4 }}>
+        {label}{required && <span style={{ color:'var(--danger-500)', marginLeft:2 }}>*</span>}
+      </label>
+      {children}
+      {hint && !error && <div style={{ font:'var(--t-label)', color:'var(--fg-subtle)', marginTop:4 }}>{hint}</div>}
+      {error && <div style={{ font:'var(--t-label)', color:'var(--danger-500)', marginTop:4 }}>{error}</div>}
     </div>
-    <div>
-      <label>著者 *</label>
-      <input type="text" name="author" required>
+  );
+}
+function TextInput({ invalid, style, ...rest }) {
+  const [f, setF] = React.useState(false);
+  return <input {...rest} onFocus={()=>setF(true)} onBlur={()=>setF(false)}
+    style={{ ...inputBase, ...(f?{borderColor:'var(--gold-500)',boxShadow:'var(--shadow-focus)'}:{}), ...(invalid?{borderColor:'var(--danger-500)'}:{}), ...style }} />;
+}
+function Select({ style, children, ...rest }) {
+  const [f, setF] = React.useState(false);
+  return <select {...rest} onFocus={()=>setF(true)} onBlur={()=>setF(false)}
+    style={{ ...inputBase, ...(f?{borderColor:'var(--gold-500)',boxShadow:'var(--shadow-focus)'}:{}), ...style }}>{children}</select>;
+}
+function Textarea({ style, ...rest }) {
+  const [f, setF] = React.useState(false);
+  return <textarea {...rest} onFocus={()=>setF(true)} onBlur={()=>setF(false)}
+    style={{ ...inputBase, resize:'vertical', minHeight:64, fontFamily:'var(--font-sans)', ...(f?{borderColor:'var(--gold-500)',boxShadow:'var(--shadow-focus)'}:{}), ...style }} />;
+}
+
+/* ===== Rating ===== */
+function Rating({ value = 0, onChange, size = 18, readOnly = false }) {
+  const [hover, setHover] = React.useState(0);
+  const shown = hover || value;
+  return (
+    <span style={{ font:`700 ${size}px/1 "Noto Serif JP",serif`, letterSpacing:'-1px', display:'inline-flex', gap:1 }}>
+      {[1,2,3,4,5].map(n => (
+        <span key={n}
+          onMouseEnter={readOnly ? undefined : ()=>setHover(n)}
+          onMouseLeave={readOnly ? undefined : ()=>setHover(0)}
+          onClick={readOnly ? undefined : ()=>onChange&&onChange(n)}
+          style={{ color: n<=shown?'var(--rating)':'var(--ink-300)', cursor:readOnly?'default':'pointer', userSelect:'none' }}
+        >{n<=shown?'★':'☆'}</span>
+      ))}
+    </span>
+  );
+}
+
+/* ===== Chip ===== */
+function Chip({ children, variant = 'default' }) {
+  const variants = {
+    default: { background:'var(--paper-100)', color:'var(--ink-800)', border:'1px solid transparent' },
+    gold:    { background:'var(--gold-50)',   color:'var(--gold-700)', border:'1px solid var(--gold-100)' },
+  };
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', padding:'4px 12px', borderRadius:'var(--radius-pill)', font:'500 13px var(--font-sans)', ...variants[variant] }}>
+      {children}
+    </span>
+  );
+}
+
+/* ===== Toast ===== */
+function Toast({ kind = 'success', message }) {
+  if (!message) return <div style={{ minHeight:36 }} />;
+  const s = { success:{bg:'#E8F2E5',border:'#C7DFC0',fg:'#2A5620'}, error:{bg:'#F7E6E3',border:'#E5BDB5',fg:'#7F2618'} }[kind];
+  return (
+    <div style={{ padding:'10px 14px', borderRadius:'var(--radius-md)', font:'var(--t-body-sm)', background:s.bg, border:`1px solid ${s.border}`, color:s.fg, display:'flex', alignItems:'center', gap:10, minHeight:36, boxSizing:'border-box', boxShadow:'var(--shadow-1)' }}>
+      <span style={{ width:8, height:8, borderRadius:999, background:'currentColor', flex:'none' }} />
+      {message}
     </div>
-    <div>
-      <label>ジャンル</label>
-      <input type="text" name="genre" placeholder="SF, ミステリ, など">
+  );
+}
+
+/* ===== Confirm ===== */
+function Confirm({ open, message, onConfirm, onCancel }) {
+  if (!open) return null;
+  return (
+    <div onClick={onCancel} style={{ position:'fixed', inset:0, background:'rgba(28,26,22,0.48)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:100 }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--bg-raised)', borderRadius:'var(--radius-md)', padding:24, width:360, boxShadow:'var(--shadow-3)', border:'1px solid var(--border)' }}>
+        <div style={{ font:'700 18px/1.35 "Noto Serif JP",serif', color:'var(--fg)', marginBottom:20 }}>{message}</div>
+        <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+          <Button variant="secondary" onClick={onCancel}>キャンセル</Button>
+          <Button variant="primary" onClick={onConfirm}>削除</Button>
+        </div>
+      </div>
     </div>
-    <div>
-      <label>評価</label>
-      <select name="rating">
-        <option value="5">★★★★★ (5)</option>
-        <option value="4">★★★★☆ (4)</option>
-        <option value="3" selected>★★★☆☆ (3)</option>
-        <option value="2">★★☆☆☆ (2)</option>
-        <option value="1">★☆☆☆☆ (1)</option>
-      </select>
+  );
+}
+
+/* ===== Header ===== */
+function Header({ count, view, onToggleView }) {
+  return (
+    <header style={{ display:'flex', alignItems:'center', gap:16, padding:'20px 0 24px', borderBottom:'1px solid var(--border)', marginBottom:28 }}>
+      <div style={{ flex:1 }}>
+        <h1 style={{ font:'700 28px/1.1 "Noto Serif JP",serif', color:'var(--fg)', margin:0, letterSpacing:'-0.01em' }}>読んだ本の管理</h1>
+        <div style={{ font:'var(--t-label)', color:'var(--fg-subtle)', letterSpacing:'0.12em', textTransform:'uppercase', marginTop:2 }}>Yomikiri · Reading journal</div>
+      </div>
+      <div style={{ display:'flex', gap:4, padding:3, background:'var(--paper-100)', borderRadius:'var(--radius-md)' }}>
+        {['table','cards'].map(v => (
+          <button key={v} onClick={()=>onToggleView(v)} style={{ font:'var(--t-button)', padding:'6px 12px', border:'none', borderRadius:4, cursor:'pointer', background:view===v?'#fff':'transparent', color:view===v?'var(--fg)':'var(--fg-muted)', boxShadow:view===v?'var(--shadow-1)':'none' }}>
+            {v==='table'?'一覧':'カード'}
+          </button>
+        ))}
+      </div>
+    </header>
+  );
+}
+
+/* ===== BookForm ===== */
+function BookForm({ onSubmit }) {
+  const empty = { title:'', author:'', genre:'', rating:3, read_date:'', memo:'' };
+  const [values, setValues] = React.useState(empty);
+  const [errors, setErrors] = React.useState({});
+  const set = k => e => setValues(v => ({ ...v, [k]: e.target.value }));
+
+  const submit = async e => {
+    e.preventDefault();
+    const errs = {};
+    if (!values.title.trim())  errs.title  = '必須です';
+    if (!values.author.trim()) errs.author = '必須です';
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) { onSubmit(null, 'title と author は必須です'); return; }
+    await onSubmit({ ...values, rating: Number(values.rating) });
+    setValues(empty);
+    setErrors({});
+  };
+
+  return (
+    <form onSubmit={submit} style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px 24px', marginBottom:24, background:'var(--bg-raised)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)', padding:20, boxShadow:'var(--shadow-1)' }}>
+      <Field label="タイトル" required error={errors.title}>
+        <TextInput name="title" value={values.title} onChange={set('title')} invalid={!!errors.title} />
+      </Field>
+      <Field label="著者" required error={errors.author}>
+        <TextInput name="author" value={values.author} onChange={set('author')} invalid={!!errors.author} />
+      </Field>
+      <Field label="ジャンル">
+        <TextInput name="genre" placeholder="SF, ミステリ, など" value={values.genre} onChange={set('genre')} />
+      </Field>
+      <Field label="評価">
+        <div style={{ display:'flex', alignItems:'center', gap:12, height:38 }}>
+          <Rating value={Number(values.rating)} onChange={n=>setValues(v=>({...v,rating:n}))} size={22} />
+          <span style={{ font:'var(--t-body-sm)', color:'var(--fg-muted)' }}>{values.rating} / 5</span>
+        </div>
+      </Field>
+      <Field label="読了日">
+        <TextInput type="date" name="read_date" value={values.read_date} onChange={set('read_date')} />
+      </Field>
+      <div />
+      <Field label="メモ" fullWidth hint="感想、印象に残った一節など">
+        <Textarea name="memo" placeholder="感想など" value={values.memo} onChange={set('memo')} />
+      </Field>
+      <div style={{ gridColumn:'1 / -1', display:'flex', gap:10, justifyContent:'flex-end' }}>
+        <Button variant="ghost" type="button" onClick={()=>{setValues(empty);setErrors({});}}>クリア</Button>
+        <Button variant="primary" type="submit">追加</Button>
+      </div>
+    </form>
+  );
+}
+
+/* ===== BookTable ===== */
+function BookRow({ book, onDelete, last }) {
+  const [hover, setHover] = React.useState(false);
+  const cell = { padding:'14px 16px', borderBottom:last?'none':'1px solid var(--border)', verticalAlign:'top' };
+  return (
+    <tr onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
+      style={{ background:hover?'var(--paper-50)':'transparent', transition:'background var(--dur-fast) var(--ease-standard)' }}>
+      <td style={cell}>
+        <div style={{ font:'500 15px/1.35 "Noto Serif JP",serif', color:'var(--fg)' }}>{book.title}</div>
+        <div style={{ font:'var(--t-body-sm)', color:'var(--fg-muted)' }}>{book.author}</div>
+      </td>
+      <td style={cell}>{book.genre ? <Chip>{book.genre}</Chip> : <span style={{ color:'var(--fg-subtle)' }}>—</span>}</td>
+      <td style={cell}><Rating value={Number(book.rating)} readOnly size={16} /></td>
+      <td style={{ ...cell, font:'var(--t-mono)', color:'var(--fg-subtle)' }}>{book.read_date||'—'}</td>
+      <td style={{ ...cell, color:'var(--fg-muted)', maxWidth:220 }}>
+        <div style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{book.memo||'—'}</div>
+      </td>
+      <td style={cell}>
+        <button onClick={()=>onDelete(book.id)} title="削除"
+          style={{ background:'none', border:'none', color:'var(--danger-500)', fontSize:14, cursor:'pointer', padding:'4px 8px', borderRadius:4 }}
+          onMouseEnter={e=>e.currentTarget.style.background='var(--danger-50)'}
+          onMouseLeave={e=>e.currentTarget.style.background='transparent'}
+        >✕</button>
+      </td>
+    </tr>
+  );
+}
+
+function BookTable({ books, onDelete }) {
+  if (books.length === 0) return <EmptyState />;
+  return (
+    <div style={{ background:'var(--bg-raised)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)', overflow:'hidden', boxShadow:'var(--shadow-1)' }}>
+      <table style={{ width:'100%', borderCollapse:'collapse', font:'var(--t-body-sm)' }}>
+        <thead>
+          <tr>{['タイトル / 著者','ジャンル','評価','読了日','メモ',''].map((h,i)=>(
+            <th key={i} style={{ textAlign:'left', font:'var(--t-label)', color:'var(--fg-muted)', letterSpacing:'0.04em', textTransform:'uppercase', padding:'12px 16px', borderBottom:'1px solid var(--border-strong)', background:'var(--paper-50)' }}>{h}</th>
+          ))}</tr>
+        </thead>
+        <tbody>
+          {books.map((b,i)=><BookRow key={b.id} book={b} onDelete={onDelete} last={i===books.length-1} />)}
+        </tbody>
+      </table>
     </div>
-    <div>
-      <label>読了日</label>
-      <input type="date" name="read_date">
+  );
+}
+
+/* ===== BookCards ===== */
+function BookCard({ book, onDelete }) {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
+      style={{ background:'var(--bg-raised)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)', padding:16, boxShadow:hover?'var(--shadow-2)':'var(--shadow-1)', transition:'box-shadow var(--dur-fast)', position:'relative' }}>
+      <div style={{ height:120, borderRadius:4, background:'linear-gradient(180deg,var(--paper-100),var(--paper-200))', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', textAlign:'center', padding:12, marginBottom:12, font:'700 15px/1.25 "Noto Serif JP",serif', color:'var(--ink-700)', overflow:'hidden' }}>{book.title}</div>
+      <div style={{ font:'500 15px/1.3 "Noto Serif JP",serif', color:'var(--fg)', marginBottom:2 }}>{book.title}</div>
+      <div style={{ font:'var(--t-body-sm)', color:'var(--fg-muted)', marginBottom:10 }}>{book.author}</div>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <Rating value={Number(book.rating)} readOnly size={16} />
+        <span style={{ font:'var(--t-mono)', color:'var(--fg-subtle)' }}>{book.read_date||'—'}</span>
+      </div>
+      {book.genre && <div style={{ marginTop:10 }}><Chip>{book.genre}</Chip></div>}
+      {book.memo && <div style={{ marginTop:10, font:'var(--t-body-sm)', color:'var(--fg-muted)', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{book.memo}</div>}
+      <button onClick={()=>onDelete(book.id)} title="削除"
+        style={{ position:'absolute', top:8, right:8, background:hover?'#fff':'transparent', border:'1px solid transparent', color:'var(--danger-500)', fontSize:13, cursor:'pointer', padding:'4px 8px', borderRadius:4, opacity:hover?1:0, transition:'opacity var(--dur-fast)' }}>✕</button>
     </div>
-    <div class="full-width">
-      <label>メモ</label>
-      <textarea name="memo" placeholder="感想など"></textarea>
+  );
+}
+
+function BookCards({ books, onDelete }) {
+  if (books.length === 0) return <EmptyState />;
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:16 }}>
+      {books.map(b=><BookCard key={b.id} book={b} onDelete={onDelete} />)}
     </div>
-    <div class="full-width">
-      <button type="submit">追加</button>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div style={{ padding:'48px 20px', textAlign:'center', color:'var(--fg-subtle)', font:'var(--t-body)', background:'var(--bg-raised)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)' }}>
+      まだ登録がありません
     </div>
-  </form>
+  );
+}
 
-  <div id="msg"></div>
+/* ===== App ===== */
+function App() {
+  const [books, setBooks]           = React.useState([]);
+  const [toast, setToast]           = React.useState(null);
+  const [view,  setView]            = React.useState('table');
+  const [pendingDelete, setPending] = React.useState(null);
 
-  <table id="book-table">
-    <thead>
-      <tr>
-        <th>タイトル</th><th>著者</th><th>ジャンル</th><th>評価</th><th>読了日</th><th>メモ</th><th></th>
-      </tr>
-    </thead>
-    <tbody id="book-tbody"></tbody>
-  </table>
+  const flash = (kind, message) => {
+    setToast({ kind, message });
+    setTimeout(() => setToast(null), 3000);
+  };
 
-  <script>
-    const msg = document.getElementById('msg');
-    const tbody = document.getElementById('book-tbody');
+  const loadBooks = async () => {
+    const r = await fetch('/api/books');
+    setBooks(await r.json());
+  };
 
-    function stars(n) {
-      return '★'.repeat(n) + '☆'.repeat(5 - n);
-    }
+  React.useEffect(() => { loadBooks(); }, []);
 
-    function showMsg(text, isError = false) {
-      msg.textContent = text;
-      msg.className = isError ? 'error' : '';
-      setTimeout(() => { msg.textContent = ''; msg.className = ''; }, 3000);
-    }
+  const addBook = async (data, error) => {
+    if (error) { flash('error', error); return; }
+    const r = await fetch('/api/books', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+    if (r.ok) { flash('success', '追加しました！'); await loadBooks(); }
+    else { const e = await r.json(); flash('error', e.error || '追加に失敗しました'); }
+  };
 
-    async function loadBooks() {
-      const res = await fetch('/api/books');
-      const books = await res.json();
-      tbody.innerHTML = '';
-      if (books.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa">まだ登録がありません</td></tr>';
-        return;
-      }
-      books.forEach(b => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${esc(b.title)}</td>
-          <td>${esc(b.author)}</td>
-          <td>${esc(b.genre)}</td>
-          <td class="rating">${stars(Number(b.rating))}</td>
-          <td>${esc(b.read_date)}</td>
-          <td class="memo-cell">${esc(b.memo)}</td>
-          <td><button class="delete-btn" data-id="${esc(b.id)}">✕</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+  const confirmDelete = async () => {
+    const id = pendingDelete;
+    setPending(null);
+    const r = await fetch(`/api/books/${id}`, { method:'DELETE' });
+    if (r.ok) { flash('success', '削除しました'); await loadBooks(); }
+    else { flash('error', '削除に失敗しました'); }
+  };
 
-    function esc(s) {
-      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
+  return (
+    <div style={{ maxWidth:900, margin:'0 auto', padding:'0 20px 64px' }}>
+      <Header count={books.length} view={view} onToggleView={setView} />
+      <BookForm onSubmit={addBook} />
+      <div style={{ marginBottom:16, minHeight:36 }}>
+        <Toast kind={toast?.kind} message={toast?.message} />
+      </div>
+      {view === 'table'
+        ? <BookTable books={books} onDelete={id=>setPending(id)} />
+        : <BookCards books={books} onDelete={id=>setPending(id)} />}
+      <Confirm open={!!pendingDelete} message="削除しますか？" onConfirm={confirmDelete} onCancel={()=>setPending(null)} />
+      <footer style={{ marginTop:32, paddingTop:20, borderTop:'1px solid var(--border)', font:'var(--t-label)', color:'var(--fg-subtle)', letterSpacing:'0.08em', textTransform:'uppercase', textAlign:'center' }}>
+        Yomikiri · {books.length} 冊 · reading journal
+      </footer>
+    </div>
+  );
+}
 
-    tbody.addEventListener('click', async e => {
-      if (!e.target.classList.contains('delete-btn')) return;
-      const id = e.target.dataset.id;
-      if (!confirm('削除しますか？')) return;
-      const res = await fetch(`/api/books/${id}`, { method: 'DELETE' });
-      if (res.ok) { showMsg('削除しました'); loadBooks(); }
-      else { showMsg('削除に失敗しました', true); }
-    });
-
-    document.getElementById('add-form').addEventListener('submit', async e => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const body = Object.fromEntries(fd.entries());
-      const res = await fetch('/api/books', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        showMsg('追加しました！');
-        e.target.reset();
-        e.target.rating.value = '3';
-        loadBooks();
-      } else {
-        const err = await res.json();
-        showMsg(err.error ?? '追加に失敗しました', true);
-      }
-    });
-
-    loadBooks();
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
